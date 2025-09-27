@@ -64,10 +64,13 @@ func handle(conn net.Conn, forward string) {
 		address = fmt.Sprintf("%s:%s", host, port)
 	}
 
+	log.Printf("CONNECT request for host: %s (address: %s)", host, address)
+	knownHost := false
 	for _, h := range hosts {
 		if strings.Contains(host, h) {
 			// Forward to local Ollama instance
 			address = "localhost" + forward
+			knownHost = true
 			break
 		}
 	}
@@ -99,6 +102,13 @@ func handle(conn net.Conn, forward string) {
 		// Catch-all for unknown HTTP requests
 		log.Printf("catch-all: %s %s", req.Method, req.URL.Path)
 		fmt.Fprintf(conn, "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nEndpoint not handled by proxy\n")
+		conn.Close()
+		return
+	}
+
+	if !knownHost {
+		log.Printf("unknown host in CONNECT: %s (address: %s)", host, address)
+		conn.Write([]byte("HTTP/1.1 502 Bad Gateway\r\nContent-Type: text/plain\r\n\r\nUnknown host, not forwarding.\n"))
 		conn.Close()
 		return
 	}
