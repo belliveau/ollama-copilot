@@ -106,10 +106,19 @@ func (s *Server) mux() http.Handler {
 
 	mux.Handle("/health", handlers.NewHealthHandler())
 	mux.Handle("/copilot_internal/v2/token", handlers.NewTokenHandler())
+	mux.Handle("/models", handlers.ModelsHandler(api))
 	mux.Handle("/v1/engines/copilot-codex/completions", handlers.NewCompletionHandler(api, s.Model, templ, s.NumPredict))
 	mux.Handle("/v1/engines/chat-control/completions", handlers.NewCompletionHandler(api, s.Model, templ, s.NumPredict))
 	mux.Handle("/v1/engines/gpt-4o-copilot/completions", handlers.NewCompletionHandler(api, s.Model, templ, s.NumPredict))
 	mux.Handle("/v1/engines/gpt-41-copilot/completions", handlers.NewCompletionHandler(api, s.Model, templ, s.NumPredict))
+
+	// Generic catch-all handler for unmatched routes
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("catch-all handler: %s %s", r.Method, r.URL.Path)
+		w.WriteHeader(http.StatusNotFound)
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("Endpoint not handled by server\n"))
+	})
 
 	return middleware.LogMiddleware(middleware.GithubHeaderMiddleware(mux))
 }

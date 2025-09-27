@@ -47,19 +47,59 @@ func handle(conn net.Conn, forward string) {
 		return
 	}
 
-	address := fmt.Sprintf("%s:%s", req.URL.Hostname(), req.URL.Port())
+	host := req.URL.Hostname()
+	port := req.URL.Port()
+	if port == "" {
+		// Default to 443 for HTTPS CONNECT requests
+		if req.Method == http.MethodConnect {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	var address string
+	if strings.Contains(host, ":") {
+		address = fmt.Sprintf("[%s]:%s", host, port)
+	} else {
+		address = fmt.Sprintf("%s:%s", host, port)
+	}
 
-	for _, host := range hosts {
-		if strings.Contains(req.URL.Hostname(), host) {
-			// This is a host we know and want to forward back to ourselves
+	for _, h := range hosts {
+		if strings.Contains(host, h) {
+			// Forward to local Ollama instance
 			address = "localhost" + forward
 			break
 		}
 	}
 
-	if req.Method != http.MethodConnect {
+	// Proxy Copilot model list endpoint
+	if req.Method == http.MethodGet && req.URL.Path == "/v1/models" {
+		// Forward to local /models endpoint
+		resp, err := http.Get("http://localhost" + forward + "/models")
+		if err != nil {
+			conn.Close()
+			log.Printf("failed to get models: %v", err)
+			return
+		}
+		defer resp.Body.Close()
+		// Write HTTP response header
+		fmt.Fprintf(conn, "HTTP/1.1 %d %s\r\n", resp.StatusCode, http.StatusText(resp.StatusCode))
+		for k, v := range resp.Header {
+			for _, vv := range v {
+				fmt.Fprintf(conn, "%s: %s\r\n", k, vv)
+			}
+		}
+		fmt.Fprint(conn, "\r\n")
+		io.Copy(conn, resp.Body)
 		conn.Close()
-		log.Printf("unsupported method: %s", req.Method)
+		return
+	}
+
+	if req.Method != http.MethodConnect {
+		// Catch-all for unknown HTTP requests
+		log.Printf("catch-all: %s %s", req.Method, req.URL.Path)
+		fmt.Fprintf(conn, "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nEndpoint not handled by proxy\n")
+		conn.Close()
 		return
 	}
 
