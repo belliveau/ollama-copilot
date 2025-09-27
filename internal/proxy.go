@@ -57,12 +57,7 @@ func handle(conn net.Conn, forward string) {
 			port = "80"
 		}
 	}
-	var address string
-	if strings.Contains(host, ":") {
-		address = fmt.Sprintf("[%s]:%s", host, port)
-	} else {
-		address = fmt.Sprintf("%s:%s", host, port)
-	}
+	address := net.JoinHostPort(host, port)
 
 	log.Printf("CONNECT request for host: %s (address: %s)", host, address)
 	knownHost := false
