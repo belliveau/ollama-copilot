@@ -12,19 +12,20 @@ func TestFactory(t *testing.T) {
 		provider   string
 		model      string
 		numPredict int
+		numCtx     int
 		typeName   string
 		err        error
 	}{
-		{"ollama", "llama2", 128, "Ollama", nil},
-		{"openrouter", "openrouter-gpt-3.5-turbo", 256, "OpenRouter", nil},
-		{"deepseek", "deepseek-coder", 256, "DeepSeek", nil},
-		{"mistral", "mistral-tiny", 256, "Mistral", nil},
-		{"openai", "o1", 256, "OpenAI", nil},
-		{"unknown", "", 256, "", adapters.ErrUnknownProvider},
+		{"ollama", "llama2", 128, 0, "Ollama", nil},
+		{"openrouter", "openrouter-gpt-3.5-turbo", 256, 0, "OpenRouter", nil},
+		{"deepseek", "deepseek-coder", 256, 0, "DeepSeek", nil},
+		{"mistral", "mistral-tiny", 256, 0, "Mistral", nil},
+		{"openai", "o1", 256, 0, "OpenAI", nil},
+		{"unknown", "", 256, 0, "", adapters.ErrUnknownProvider},
 	}
 
 	for _, test := range tests {
-		provider, err := adapters.NewProvider(test.provider, test.model, "", test.numPredict, "system", "")
+		provider, err := adapters.NewProvider(test.provider, test.model, "", test.numPredict, test.numCtx, "system", "")
 		if err != test.err {
 			t.Fatalf("expected error %v, got %v", test.err, err)
 		}

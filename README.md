@@ -96,6 +96,7 @@ You can configure the server using command-line flags:
 | `-token` | `TOKEN` | Token to pass for provider |
 | `-model` | `codellama:code` | LLM model to use |
 | `-num-predict` | `250` | Number of tokens to predict (recommended `25` for copilot) |
+| `-num-ctx` | | Context window size for model |
 | `-template` | `<PRE> {{.Prefix}} <SUF> {{.Suffix}} <MID>` | Prompt template for fill-in-middle |
 | `-system` | `You are a helpful...` | System prompt to guide the model |
 

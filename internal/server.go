@@ -28,6 +28,7 @@ type Server struct {
 	Token       string
 	Model       string
 	NumPredict  int
+	NumCtx      int
 	System      string
 }
 
@@ -96,7 +97,7 @@ func selfAssignCertificate() (tls.Certificate, error) {
 
 // mux returns the main mux for the server.
 func (s *Server) mux() http.Handler {
-	provider, err := adapters.NewProvider(s.Provider, s.Model, s.Token, s.NumPredict, s.System, s.Template)
+	provider, err := adapters.NewProvider(s.Provider, s.Model, s.Token, s.NumPredict, s.NumCtx, s.System, s.Template)
 	if err != nil {
 		log.Fatalf("error initialize api: %s", err.Error())
 		return nil

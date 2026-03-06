@@ -34,6 +34,11 @@
               default = 0;
               description = "Number of predictions to return (default: 50)";
             };
+            ollama-copilot.num-ctx = lib.mkOption {
+              type = lib.types.int;
+              default = 0;
+              description = "Size of the context window for the model";
+            };
             ollama-copilot.port = lib.mkOption {
               type = lib.types.str;
               default = "";
@@ -73,6 +78,7 @@
                 key_opt = if cfg.key != "" then " -key " + cfg.key else "";
                 model_opt = if cfg.model != "" then " -model " + cfg.model else "";
                 num_predict_opt = if cfg.num-predict != 0 then " -num-predict " + toString cfg.num-predict else "";
+                num_ctx_opt = if cfg.num-ctx != 0 then " -num-predict " + toString cfg.num-ctx else "";
                 port_opt = if cfg.port != "" then " -port " + cfg.port else "";
                 port_ssl_opt = if cfg.port-ssl != "" then " -port-ssl " + cfg.port-ssl else "";
                 proxy_port_opt = if cfg.proxy-port != "" then " -proxy-port " + cfg.proxy-port else "";
@@ -85,7 +91,7 @@
                 wantedBy = [ "multi-user.target" ];
                 serviceConfig = {
                   Type = "simple";
-                  ExecStart = "${lib.getExe self.packages.x86_64-linux.default}${cert_opt}${key_opt}${model_opt}${num_predict_opt}${port_opt}${port_ssl_opt}${proxy_port_opt}${proxy_port_ssl_opt}${system_opt}${template_opt}";
+                  ExecStart = "${lib.getExe self.packages.x86_64-linux.default}${cert_opt}${key_opt}${model_opt}${num_predict_opt}${num_ctx_opt}${port_opt}${port_ssl_opt}${proxy_port_opt}${proxy_port_ssl_opt}${system_opt}${template_opt}";
                   Restart = "always";
                 };
               };

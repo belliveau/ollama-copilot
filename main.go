@@ -17,6 +17,7 @@ var (
 	key          = flag.String("key", "", "Key file path *.key")
 	model        = flag.String("model", "codellama:code", "LLM model to use")
 	numPredict   = flag.Int("num-predict", 250, "Number of predictions to return")
+	numCtx       = flag.Int("num-ctx", 0, "Context window size to use with the model")
 	templateStr  = flag.String("template", "<PRE> {{.Prefix}} <SUF> {{.Suffix}} <MID>", "Fill-in-middle template to apply in prompt")
 	system       = flag.String("system", "You are a helpful coding assistant. Respond with autocomplete code only, without explanations or comments.", "The system parameter is use to provide system-level instructions to guide the model's behavior throughout the conversation")
 	debug        = flag.Bool("debug", false, "Enable debug logging")
@@ -35,6 +36,7 @@ func main() {
 		Token:       *token,
 		Model:       *model,
 		NumPredict:  *numPredict,
+		NumCtx:      *numCtx,
 		System:      *system,
 	}
 

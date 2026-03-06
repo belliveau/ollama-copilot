@@ -14,6 +14,7 @@ import (
 type Ollama struct {
 	model      string
 	numPredict int
+	numCtx     int
 	system     string
 	client     *api.Client
 }
@@ -31,7 +32,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // NewOllama creates a new Ollama adapter
-func NewOllama(model string, token string, numPredict int, system string) (ports.Provider, error) {
+func NewOllama(model string, token string, numPredict int, numCtx int, system string) (ports.Provider, error) {
 	host := os.Getenv("OLLAMA_HOST")
 	if host == "" {
 		host = "http://127.0.0.1:11434"
@@ -58,6 +59,7 @@ func NewOllama(model string, token string, numPredict int, system string) (ports
 	return &Ollama{
 		model:      model,
 		numPredict: numPredict,
+		numCtx:     numCtx,
 		client:     client,
 		system:     system,
 	}, nil
@@ -76,6 +78,10 @@ func (o *Ollama) Completion(ctx context.Context, req ports.CompletionRequest, ca
 			"stop":        append(req.Stop, "<EOT>"),
 			"num_predict": o.numPredict,
 		},
+	}
+
+	if o.numCtx > 0 {
+		generate.Options["num_ctx"] = o.numCtx
 	}
 
 	return o.client.Generate(ctx, &generate, func(resp api.GenerateResponse) error {
