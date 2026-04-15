@@ -105,7 +105,9 @@ You can configure the server using command-line flags:
 ### Neovim
 
 1. Install [copilot.vim](https://github.com/github/copilot.vim)
+1. Complete `:Copilot signin` before enabling the proxy
 1. Configure variables
+1. If you already enabled the proxy and sign-in is failing, remove the proxy settings, sign in first, and then enable them again
 
 ```vim
 let g:copilot_proxy = 'http://localhost:11435'
